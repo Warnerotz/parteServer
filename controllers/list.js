@@ -1,8 +1,25 @@
 //modulos
+var fs = require('fs');
+var multer = require('multer');
+var path = require('path');
 
 
 //modelos
 const List = require('../models/list');
+
+//config multer
+
+var store = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, './uploads/medias');
+
+    },
+    filename: function(req, file, cb) {
+        cb(null, file.originalname);
+    }
+
+});
+var upload = multer({ storage: store }).single('file');
 
 //acciones
 function saveList(req, res) {
@@ -45,24 +62,40 @@ function getLists(req, res) {
     })
 };
 
-function listOne(req, res) {
+function getList(req, res) {
+    let listId = req.params.id;
+    List.findById(listId).exec((err, list) => {
+        if (err) {
+            res.status(500).send({ message: "error en el servidor" })
+        } else {
+            if (!list) {
+                res.status(404).send({ message: "no existe lista" })
 
+            } else {
+                res.status(200).send({
+                    list
+                })
+            }
+        }
+
+    })
 
 }
 
-function uploadMedia(req, res) {
+function uploadMedia(req, res, next) {
+
     var listId = req.params.id;
-    var file_name = 'no subido...';
-    if (req.files) {
-        var filePath = req.files.media.path;
-        var fileSplit = filePath.split('\\');
-        var fileName = fileSplit[2];
 
-        var extSplit = fileName.split('\.');
-        var fileExt = extSplit[1];
+    upload(req, res, function(err) {
+        console.log(req.file);
+        if (err) {
+            return res.status(500).send({ error: err });
 
-        if (fileExt == 'mp4') {
-            List.findByIdAndUpdate(listId, { $push: { media: { name: 'miko', path: fileName } } }, { new: true }, (err, lisUpdate) => {
+        }
+        List.findByIdAndUpdate(listId, {
+                $push: { media: { name: req.file.originalname, path: req.file.path, size: req.file.size, fellow: req.file.mimetype } }
+            }, { new: true },
+            (err, lisUpdate) => {
                 if (err) {
                     res.status(500).send({
                         message: 'Error al actualizar la lista'
@@ -71,31 +104,41 @@ function uploadMedia(req, res) {
                     if (!lisUpdate) {
                         res.status(404).send({ message: "no se ha podido actualizar la lista" });
                     } else {
-                        res.status(200).send({ list: lisUpdate, image: fileName });
+                        res.status(200).send({ list: lisUpdate, file: req.file, originalname: req.file.originalname, uploadname: req.file.filename });
 
                     }
 
                 }
             })
 
-        } else {
-            res.status(200).send({ message: "extension no valida" })
-
-        }
+    })
 
 
-
-    } else {
-        res.status(404).send({ message: "no hay ficheros" })
-    }
 
 }
 
+function getMediaFile(req, res) {
+    console.log("entrooo get media")
+    const mediaFile = req.params.mediaFile;
+    var path_file = './uploads/medias/' + mediaFile;
+    fs.exists(path_file, function(exists) {
+        if (exists) {
+            console.log("entro en exist!!")
+            res.sendFile(path.resolve(path_file));
 
+        } else {
+            res.status(404).send({ message: 'no existe el video' })
+
+        }
+
+    })
+
+}
 
 module.exports = {
     saveList,
     getLists,
-    listOne,
-    uploadMedia
+    getList,
+    uploadMedia,
+    getMediaFile
 }

@@ -8,7 +8,9 @@ var ListSchema = Schema({
     name: String,
     media: [{
         name: String,
-        path: String
+        path: String,
+        size: String,
+        fellow: String
     }]
 
 
