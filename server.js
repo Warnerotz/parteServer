@@ -17,6 +17,16 @@ var io = require('socket.io').listen(server);
 
 io.on('connection', (socket) => {
     console.log('sockect connection!!');
+    let src = "holaa";
+
+
+    socket.on('changeVideo', (data) => {
+        console.log(data.src);
+        let src = data.src;
+        socket.broadcast.emit("VideoName", { src: data.src });
+
+    });
+    socket.emit('msg', { msg: src });
 
 })
 
