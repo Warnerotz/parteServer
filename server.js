@@ -17,16 +17,29 @@ var io = require('socket.io').listen(server);
 
 io.on('connection', (socket) => {
     console.log('sockect connection!!');
-    let src = "holaa";
+
 
 
     socket.on('changeVideo', (data) => {
-        console.log(data.src);
+        console.log(data);
         let src = data.src;
-        socket.broadcast.emit("VideoName", { src: data.src });
+        socket.broadcast.emit("VideoName", { src: data.src, play: data.play });
 
     });
-    socket.emit('msg', { msg: src });
+    socket.on('pause', (data) => {
+        console.log('pauseee', data);
+        if (data) {
+            console.log("siiii")
+            socket.broadcast.emit('pauseClient', { pause: data })
+        } else {
+            console.log("noooo")
+            socket.broadcast.emit('stopClient', { stop: true })
+
+        }
+
+
+
+    });;
 
 })
 
