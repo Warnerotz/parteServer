@@ -135,10 +135,30 @@ function getMediaFile(req, res) {
 
 }
 
+function deleteList(req, res) {
+    var listId = req.params.id;
+    List.findByIdAndRemove(listId, (err, listRemoved) => {
+        if (err) {
+            res.status(200).send({ message: 'error en la peticion' });
+
+        } else {
+            if (!listRemoved) {
+                res.status(404).send({ message: 'no se ha borrado la lista' });
+
+            } else {
+                res.status(200).send({ list: listRemoved });
+            }
+        }
+
+    });
+
+}
+
 module.exports = {
     saveList,
     getLists,
     getList,
     uploadMedia,
-    getMediaFile
+    getMediaFile,
+    deleteList
 }

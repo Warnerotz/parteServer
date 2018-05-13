@@ -11,8 +11,8 @@ var ListSchema = Schema({
         path: String,
         size: String,
         fellow: String
-    }]
-
+    }],
+    user: { type: Schema.ObjectId, ref: 'User' }
 
 }, { timestamps: true });
 
