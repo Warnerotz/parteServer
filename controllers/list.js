@@ -30,6 +30,7 @@ function saveList(req, res) {
     console.log(params);
     //Asignar valores al objeto lista
     list.name = params.name;
+    list.user = req.user.sub;
     list.save((err, listStored) => {
         if (err) {
             res.status(500).send({ message: "error en el servidor" })
@@ -46,7 +47,7 @@ function saveList(req, res) {
 };
 
 function getLists(req, res) {
-    List.find({}).exec((err, lists) => {
+    List.find({}).populate({ path: 'user' }).exec((err, lists) => {
         if (err) {
             res.status(500).send({ message: "error en el servidor" })
         } else {
@@ -64,7 +65,7 @@ function getLists(req, res) {
 
 function getList(req, res) {
     let listId = req.params.id;
-    List.findById(listId).exec((err, list) => {
+    List.findById(listId).populate({ path: 'user' }).exec((err, list) => {
         if (err) {
             res.status(500).send({ message: "error en el servidor" })
         } else {
