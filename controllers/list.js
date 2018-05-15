@@ -23,27 +23,51 @@ var upload = multer({ storage: store }).single('file');
 
 //acciones
 function saveList(req, res) {
+    console.log(req.files);
     //crear objeto lista
     let list = new List();
     //recoger los parametros de la peticion
     let params = req.body;
-    console.log(params);
     //Asignar valores al objeto lista
     list.name = params.name;
     list.user = req.user.sub;
-    list.save((err, listStored) => {
-        if (err) {
-            res.status(500).send({ message: "error en el servidor" })
+    if (req.files) {
+        console.log('holaaa');
+
+        var file_path = req.files.image.path;
+        var file_split = file_path.split('\\');
+        var file_name = file_split[3];
+        var ext_split = file_name.split('\.');
+        var file_ext = ext_split[1];
+        if (file_ext == 'png' || file_ext == 'jpg' || file_ext == 'jpeg' || file_ext == 'gif') {
+            list.img = file_name;
+            list.save((err, listStored) => {
+                if (err) {
+                    res.status(500).send({ message: "error en el servidor" })
+                } else {
+                    if (!listStored) {
+                        res.status(404).send({ message: "la lista no se ha podido guardar" })
+                    } else {
+                        res.status(200).send({
+                            list: listStored
+                        })
+                    }
+                }
+            });
         } else {
-            if (!listStored) {
-                res.status(404).send({ message: "la lista no se ha podido guardar" })
-            } else {
-                res.status(200).send({
-                    list: listStored
-                })
-            }
+            fs.unlink(file_path, (err) => {
+                if (err) {
+                    res.status(200).send({ message: 'extension no valida y fichero no borrado' });
+                } else {
+                    res.status(200).send({ message: 'extension no valida' });
+                }
+            });
         }
-    });
+    } else {
+        console.log('porquee entro en el else');
+        res.status(200).send({ message: 'No se ha subido archivo' });
+    }
+
 };
 
 function getLists(req, res) {
@@ -88,7 +112,6 @@ function uploadMedia(req, res, next) {
     var listId = req.params.id;
 
     upload(req, res, function(err) {
-        console.log(req.file);
         if (err) {
             return res.status(500).send({ error: err });
 
@@ -119,7 +142,6 @@ function uploadMedia(req, res, next) {
 }
 
 function getMediaFile(req, res) {
-    console.log("entrooo get media")
     const mediaFile = req.params.mediaFile;
     var path_file = './uploads/medias/' + mediaFile;
     fs.exists(path_file, function(exists) {

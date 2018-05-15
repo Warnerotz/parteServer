@@ -125,7 +125,7 @@ function updateUser(req, res) {
 function UploadImage(req, res) {
     var userId = req.params.id;
     var file_name = 'no subido';
-
+    console.log(req.files.image);
     if (req.files) {
 
         var file_path = req.files.image.path;

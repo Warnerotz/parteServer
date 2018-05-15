@@ -15,13 +15,13 @@ app.use(cookieParser());
 
 //Configurar cabeceras y cors
 app.use((req, res, next) => {
-    //res.setHeader("Access-Control-Allow-Origin", req.headers.origin);
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
     //res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
-    res.header('Access-Control-Allow-Origin', '*');
+    //res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method');
     res.header('Acces-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS, PUT, DELETE');
     res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.header('Access-Control-Allow-Credentials', true);
     next();
 
 });
