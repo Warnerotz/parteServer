@@ -2,6 +2,7 @@
 const bcrypt = require('bcrypt-nodejs');
 const fs = require('fs');
 const path = require('path');
+var multer = require('multer');
 
 var User = require('../models/user');
 
@@ -112,6 +113,7 @@ function updateUser(req, res) {
                 res.status(404).send({ message: "no se ha podido actualizar el usuario" })
 
             } else {
+                console.log('updateuser', userUpdated);
                 res.status(200).send({ user: userUpdated });
 
             }
@@ -122,43 +124,67 @@ function updateUser(req, res) {
 
 }
 
+function getUser(req, res) {
+    let userId = req.params.id;
+    console.log(userId);
+    User.findById(userId).exec((err, user) => {
+        if (err) {
+            res.status(500).send({ message: "error en el servidor" })
+        } else {
+            if (!user) {
+                res.status(404).send({ message: "no existe lista" })
+
+            } else {
+                res.status(200).send({
+                    user
+                })
+            }
+        }
+
+    })
+
+}
+
 function UploadImage(req, res) {
     var userId = req.params.id;
-    var file_name = 'no subido';
-    console.log(req.files.image);
-    if (req.files) {
-
-        var file_path = req.files.image.path;
-        var file_split = file_path.split('\\');
-        var file_name = file_split[2];
-        var ext_split = file_name.split('\.');
-        var file_ext = ext_split[1];
 
 
 
-        if (file_ext == 'png' || file_ext == 'jpg' || file_ext == 'jpeg' || file_ext == 'gif') {
+    var store = multer.diskStorage({
+        destination: function(req, file, cb) {
+            cb(null, './uploads/users');
+
+        },
+        filename: function(req, file, cb) {
+            cb(null, file.originalname);
+        }
+
+    });
+    var upload = multer({ storage: store }).single('image');
+
+    upload(req, res, function(err) {
+        if (err) {
+            return res.status(500).send({ error: err });
+        }
+        if (req.file.mimetype == 'image/png' || req.file.mimetype == 'image/jpg' || req.file.mimetype == 'image/jpeg' || req.file.mimetype == 'image/gif') {
             if (userId != req.user.sub) {
                 return res.status(500).send({ message: "No tienes permiso para actualizar el usuario" })
             }
-
-            User.findByIdAndUpdate(userId, { image: file_name }, { new: true }, (err, userUpdated) => {
+            User.findByIdAndUpdate(userId, { image: req.file.originalname }, { new: true }, (err, userUpdated) => {
                 if (err) {
                     res.status(500).send({ message: "error al actualizar el usuario" })
-
                 } else {
                     if (!userUpdated) {
                         res.status(404).send({ message: "no se ha podido actualizar el usuario" })
-
                     } else {
-                        res.status(200).send({ user: userUpdated, image: file_name });
+                        console.log('updateuserimage', userUpdated);
+                        res.status(200).send({ user: userUpdated, image: req.file.name });
 
                     }
-
                 }
-
             });
         } else {
-            fs.unlink(file_path, (err) => {
+            fs.unlink(req.file.path, (err) => {
                 if (err) {
                     res.status(200).send({ message: 'extension no valida y fichero no borrado' });
                 } else {
@@ -166,9 +192,8 @@ function UploadImage(req, res) {
                 }
             });
         }
-    } else {
-        res.status(200).send({ message: 'No se ha subido archivo' });
-    }
+
+    })
 }
 
 
@@ -212,6 +237,7 @@ module.exports = {
     updateUser,
     UploadImage,
     getImageFile,
-    getUsers
+    getUsers,
+    getUser
 
 }
