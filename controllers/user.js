@@ -78,7 +78,8 @@ function login(req, res) {
                         if (params.gettoken) {
                             res.status(200).cookie('auth', jwt.createToken(user)).send({ token: jwt.createToken(user) })
                         } else {
-                            user.password = '';
+                            delete user.password;
+                            console.log(user);
                             res.status(200).cookie('auth', jwt.createToken(user)).send({ user });
 
                         }
@@ -163,6 +164,7 @@ function UploadImage(req, res) {
     var upload = multer({ storage: store }).single('image');
 
     upload(req, res, function(err) {
+        console.log(req.file);
         if (err) {
             return res.status(500).send({ error: err });
         }

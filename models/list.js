@@ -7,6 +7,7 @@ const Schema = mongoose.Schema;
 var ListSchema = Schema({
     name: String,
     img: String,
+    description: String,
     media: [{
         name: String,
         path: String,
