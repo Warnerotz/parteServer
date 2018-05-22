@@ -16,7 +16,6 @@ function saveUser(req, res) {
 
     var params = req.body;
 
-    console.log(req.body);
     if (params.password && params.name && params.email && params.age) {
         user.name = params.name;
         user.surname = params.surname;
@@ -63,7 +62,6 @@ function saveUser(req, res) {
 
 function login(req, res) {
     var params = req.body;
-    console.log(params);
     var email = params.email;
     var password = params.password;
 
@@ -79,7 +77,6 @@ function login(req, res) {
                             res.status(200).cookie('auth', jwt.createToken(user)).send({ token: jwt.createToken(user) })
                         } else {
                             delete user.password;
-                            console.log(user);
                             res.status(200).cookie('auth', jwt.createToken(user)).send({ user });
 
                         }
@@ -100,6 +97,7 @@ function login(req, res) {
 function updateUser(req, res) {
     var userId = req.params.id;
     var update = req.body;
+    console.log(update)
 
     if (userId != req.user.sub) {
         return res.status(500).send({ message: "No tienes permiso para actualizar el usuario" })
@@ -114,7 +112,6 @@ function updateUser(req, res) {
                 res.status(404).send({ message: "no se ha podido actualizar el usuario" })
 
             } else {
-                console.log('updateuser', userUpdated);
                 res.status(200).send({ user: userUpdated });
 
             }
@@ -127,7 +124,6 @@ function updateUser(req, res) {
 
 function getUser(req, res) {
     let userId = req.params.id;
-    console.log(userId);
     User.findById(userId).exec((err, user) => {
         if (err) {
             res.status(500).send({ message: "error en el servidor" })
@@ -145,6 +141,8 @@ function getUser(req, res) {
     })
 
 }
+
+
 
 function UploadImage(req, res) {
     var userId = req.params.id;
@@ -164,7 +162,6 @@ function UploadImage(req, res) {
     var upload = multer({ storage: store }).single('image');
 
     upload(req, res, function(err) {
-        console.log(req.file);
         if (err) {
             return res.status(500).send({ error: err });
         }
@@ -179,7 +176,6 @@ function UploadImage(req, res) {
                     if (!userUpdated) {
                         res.status(404).send({ message: "no se ha podido actualizar el usuario" })
                     } else {
-                        console.log('updateuserimage', userUpdated);
                         res.status(200).send({ user: userUpdated, image: req.file.name });
 
                     }
@@ -231,6 +227,27 @@ function getUsers(req, res) {
         }
     })
 
+
+
+}
+
+function deleteUser(req, res) {
+    var userId = req.params.id;
+    User.findByIdAndRemove(userId, (err, userRemoved) => {
+        if (err) {
+            res.status(200).send({ message: 'error en la peticion' });
+
+        } else {
+            if (!userRemoved) {
+                res.status(404).send({ message: 'no se ha borrado la lista' });
+
+            } else {
+                res.status(200).send({ user: userRemoved });
+            }
+        }
+
+    });
+
 }
 
 module.exports = {
@@ -240,6 +257,7 @@ module.exports = {
     UploadImage,
     getImageFile,
     getUsers,
-    getUser
+    getUser,
+    deleteUser
 
 }
