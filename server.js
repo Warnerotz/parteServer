@@ -27,19 +27,13 @@ io.on('connection', (socket) => {
 
     });
     socket.on('pause', (data) => {
-        console.log('pauseee', data);
-        if (data) {
-            console.log("siiii")
-            socket.broadcast.emit('pauseClient', { pause: data })
-        } else {
-            console.log("noooo")
-            socket.broadcast.emit('stopClient', { stop: true })
-
-        }
-
-
-
-    });;
+        console.log('pauseeeee')
+        socket.broadcast.emit('pauseClient', { pause: data })
+    });
+    socket.on('restart', (data) => {
+        console.log('stooooop')
+        socket.broadcast.emit('restartClient');
+    });
 
 })
 

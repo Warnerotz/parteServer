@@ -37,7 +37,8 @@ function saveList(req, res) {
 };
 
 function getLists(req, res) {
-    List.find({}).populate({ path: 'user' }).exec((err, lists) => {
+    userId = req.params.userId;
+    List.find({ 'user': userId }).populate({ path: 'user' }).exec((err, lists) => {
         if (err) {
             res.status(500).send({ message: "error en el servidor" })
         } else {

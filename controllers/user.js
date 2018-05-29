@@ -70,25 +70,25 @@ function login(req, res) {
             res.status(500).send({ message: "error al comprobar si existe usuario" });
         } else {
             if (user) {
-                bcrypt.compare(password, user.password, (err, check) => {
-                    if (check) {
-                        //comprobar y general el token
-                        if (params.gettoken) {
-                            res.status(200).cookie('auth', jwt.createToken(user)).send({ token: jwt.createToken(user) })
+                if (user.validated) {
+                    bcrypt.compare(password, user.password, (err, check) => {
+                        if (check) {
+                            //comprobar y general el token
+                            if (params.gettoken) {
+                                res.status(200).cookie('auth', jwt.createToken(user)).send({ token: jwt.createToken(user) })
+                            } else {
+                                delete user.password;
+                                res.status(200).cookie('auth', jwt.createToken(user)).send({ user });
+                            }
                         } else {
-                            delete user.password;
-                            res.status(200).cookie('auth', jwt.createToken(user)).send({ user });
-
+                            res.status(404).send({ message: 'usuario o password incorrectos' });
                         }
-
-
-                    } else {
-                        res.status(404).send({ message: 'usuario o password incorrectos' });
-                    }
-                })
+                    })
+                } else {
+                    res.status(404).send({ message: 'usuario no validado espere ha ser validado para loguear' });
+                }
             } else {
                 res.status(404).send({ message: 'usuario o password incorrectos' });
-
             }
         }
     });
@@ -97,11 +97,7 @@ function login(req, res) {
 function updateUser(req, res) {
     var userId = req.params.id;
     var update = req.body;
-    console.log(update)
 
-    if (userId != req.user.sub) {
-        return res.status(500).send({ message: "No tienes permiso para actualizar el usuario" })
-    }
 
     User.findByIdAndUpdate(userId, update, { new: true }, (err, userUpdated) => {
         if (err) {
